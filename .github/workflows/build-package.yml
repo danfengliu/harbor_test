@@ -8,7 +8,7 @@ on:
           - master
           - release-*
         types: [closed]
-    pull_request:
+    push:
         tags:
           - v*
 
