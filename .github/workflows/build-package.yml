@@ -31,7 +31,7 @@ jobs:
       - run: gcloud info
       - uses: actions/checkout@v2
       - name: Slack Notification
-        uses: rtCamp/action-slack-notify@master
+        uses: drilonrecica/action-slack-notify@0.0.3
         env:
           SLACK_CHANNEL: general
           SLACK_COLOR: '#3278BD'
