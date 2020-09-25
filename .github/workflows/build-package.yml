@@ -1,0 +1,42 @@
+name: "Build Package"
+env:
+  DOCKER_COMPOSE_VERSION: 1.23.0
+
+on:
+    pull_request:
+        branches:
+          - master
+          - release-*
+        tags:
+          - v*
+        types: [closed]
+
+jobs:
+  BUILD_PACKAGE:
+    if: github.event.pull_request.merged == true
+    env:
+        BUILD_PACKAGE: true
+    runs-on:
+      #- self-hosted
+      - ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        with:
+          version: '285.0.0'
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_email: ${{ secrets.GCP_SA_EMAIL }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
+      - run: gcloud info
+      - uses: actions/checkout@v2
+      - name: Slack Notification
+        uses: drilonrecica/action-slack-notify@0.0.3
+        env:
+          SLACK_CHANNEL: general
+          SLACK_COLOR: '#3278BD'
+          SLACK_ICON: https://github.com/docker.png?size=48
+          SLACK_MESSAGE: 'package name :package:'
+          SLACK_TITLE: BUILD HARBOR
+          SLACK_USERNAME: git action
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
