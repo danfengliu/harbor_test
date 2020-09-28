@@ -49,7 +49,7 @@ jobs:
           echo "==========$target_branch=========="
           # the target release version is the version of next release(RC or GA). It needs to be updated on creating new release branch.
           target_release_version=$(cat ./VERSION)
-          Harbor_Package_Version=$target_release_version-'build.${{ github.run_id }}
+          Harbor_Package_Version=$target_release_version-'build.'${{ github.run_id }}
           if [[ $target_branch == "master" ]]; then
             Harbor_Assets_Version=$Harbor_Package_Version
           else
