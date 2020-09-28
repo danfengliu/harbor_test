@@ -4,9 +4,11 @@ env:
 
 on:
     push:
-        tags:
+        branches:
           - master
           - release-*
+          - new*
+        tags:
           - v*
 jobs:
   BUILD_PACKAGE:
@@ -44,7 +46,7 @@ jobs:
           env
           df -h
           target_branch="$(echo ${GITHUB_REF#refs/heads/})"
-          echo "==========$target_branch--------"
+          echo "==========$target_branch=========="
           # the target release version is the version of next release(RC or GA). It needs to be updated on creating new release branch.
           target_release_version=$(cat ./VERSION)
           Harbor_Package_Version=$target_release_version-'build.${{ github.run_id }}
@@ -58,6 +60,9 @@ jobs:
           else
             Harbor_Build_Base_Tag=dev
           fi
+          echo "==========$Harbor_Assets_Version=========="
+          echo "==========$Harbor_Build_Base_Tag=========="
+          echo "==========$Harbor_Package_Version=========="
           harbor_offline_build_bundle=""
           harbor_online_build_bundle=""
           harbor_logs_bucket="harbor-ci-logs"
@@ -71,10 +76,8 @@ jobs:
             harbor_target_bucket=$harbor_releases_bucket/$target_branch
           fi
           cd src/github.com/goharbor/harbor
-
-          #sudo make package_offline GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} PKGVERSIONTAG=${Harbor_Package_Version} NOTARYFLAG=true CLAIRFLAG=true CHARTFLAG=true TRIVYFLAG=true HTTPPROXY=
-          #sudo make package_online GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} PKGVERSIONTAG=${Harbor_Package_Version} NOTARYFLAG=true CLAIRFLAG=true CHARTFLAG=true TRIVYFLAG=true HTTPPROXY=
-
+          sudo make package_offline GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} PKGVERSIONTAG=${Harbor_Package_Version} NOTARYFLAG=true CLAIRFLAG=true CHARTFLAG=true TRIVYFLAG=true HTTPPROXY=
+          sudo make package_online GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} PKGVERSIONTAG=${Harbor_Package_Version} NOTARYFLAG=true CLAIRFLAG=true CHARTFLAG=true TRIVYFLAG=true HTTPPROXY=
           harbor_offline_build_bundle=$(basename harbor-offline-installer-*.tgz)
           harbor_online_build_bundle=$(basename harbor-online-installer-*.tgz)
           echo "Package name is: $harbor_offline_build_bundle"
