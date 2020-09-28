@@ -96,7 +96,6 @@ jobs:
           uploader ${harbor_online_build_bundle}.asc        $harbor_target_bucket
           uploader harbor-offline-installer-latest.tgz      $harbor_target_bucket
           uploader harbor-offline-installer-latest.tgz.asc  $harbor_target_bucket
-      - uses: actions/checkout@v2
       - name: Slack Notification
         uses: drilonrecica/action-slack-notify@0.0.3
         env:
