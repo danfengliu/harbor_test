@@ -3,17 +3,14 @@ env:
   DOCKER_COMPOSE_VERSION: 1.23.0
 
 on:
-    pull_request:
+    push:
         branches:
           - master
           - release-*
-        #types: [closed]
-    push:
         tags:
           - v*
 jobs:
   BUILD_PACKAGE:
-    #if: github.event.pull_request.merged == true
     env:
         BUILD_PACKAGE: true
     runs-on:
@@ -44,18 +41,14 @@ jobs:
           path: src/github.com/goharbor/harbor
       - name: Build Package
         run: |
-          cd src/github.com/goharbor/harbor
+          set -x
           env
           df -h
-          #NPM_REGISTRY=http://build-artifactory.eng.vmware.com/artifactory/api/npm/npm
-          target_branch=${{ github.event.pull_request.base.ref }}
-          echo "===target_branch:$target_branch"
+          target_branch="$(echo ${GITHUB_REF#refs/heads/})"
+          echo "==========$target_branch--------"
           # the target release version is the version of next release(RC or GA). It needs to be updated on creating new release branch.
           target_release_version=$(cat ./VERSION)
-          echo "===target_release_version:$target_branch"
-          pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
-          echo "===pull_number:$pull_number"
-          Harbor_Package_Version=$target_release_version-'build.'$pull_number
+          Harbor_Package_Version=$target_release_version-'build.${{ github.run_id }}
           if [[ $target_branch == "master" ]]; then
             Harbor_Assets_Version=$Harbor_Package_Version
           else
@@ -78,38 +71,28 @@ jobs:
           else
             harbor_target_bucket=$harbor_releases_bucket/$target_branch
           fi
-          sudo make package_offline GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} PKGVERSIONTAG=${Harbor_Package_Version} NOTARYFLAG=true CLAIRFLAG=true CHARTFLAG=true TRIVYFLAG=true HTTPPROXY=
-          sudo make package_online GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} PKGVERSIONTAG=${Harbor_Package_Version} NOTARYFLAG=true CLAIRFLAG=true CHARTFLAG=true TRIVYFLAG=true HTTPPROXY=
+          cd src/github.com/goharbor/harbor
+          #sudo make package_offline GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} PKGVERSIONTAG=${Harbor_Package_Version} NOTARYFLAG=true CLAIRFLAG=true CHARTFLAG=true TRIVYFLAG=true HTTPPROXY=
+          #sudo make package_online GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} PKGVERSIONTAG=${Harbor_Package_Version} NOTARYFLAG=true CLAIRFLAG=true CHARTFLAG=true TRIVYFLAG=true HTTPPROXY=
           harbor_offline_build_bundle=$(basename harbor-offline-installer-*.tgz)
           harbor_online_build_bundle=$(basename harbor-online-installer-*.tgz)
-          #harbor_offline_build_bundle="test1.tgz"
-          #harbor_offline_build_bundle="test2.tgz"
-          #touch $harbor_offline_build_bundle
-          #touch $harbor_online_build_bundle
           echo "Package name is: $harbor_offline_build_bundle"
           echo "Package name is: $harbor_online_build_bundle"
 
-          #echo -en "$HARBOR_SIGN_KEY" | gpg --import
-          #gpg -v -ab -u $HARBOR_SIGN_KEY_ID $harbor_offline_build_bundle
-          #gpg -v -ab -u $HARBOR_SIGN_KEY_ID $harbor_online_build_bundle
+          echo -en "${{ secrets.HARBOR_SIGN_KEY }}" |  gpg --import
+          gpg -v -ab -u ${{ secrets.HARBOR_SIGN_KEY_ID }} $harbor_offline_build_bundle
+          gpg -v -ab -u ${{ secrets.HARBOR_SIGN_KEY_ID }} $harbor_online_build_bundle
 
-          echo "::set-env name=harbor_offline_build_bundle::$harbor_offline_build_bundle"
-          echo "::set-env name=harbor_online_build_bundle::$harbor_online_build_bundle"
-          echo "::set-env name=harbor_target_bucket::$harbor_target_bucket"
-      - name: upload harbor offline package to gs
-        run: |
-          set -x
-          source src/github.com/goharbor/harbor/tests/ci/build_util.sh
-          cd src/github.com/goharbor/harbor
-          cp ${harbor_offline_build_bundle}     harbor-offline-installer-latest.tgz
-          #cp ${harbor_offline_build_bundle}.asc harbor-offline-installer-latest.tgz.asc
-          uploader ${harbor_offline_build_bundle}     $harbor_target_bucket
-          #uploader ${harbor_offline_build_bundle}.asc $harbor_target_bucket
-          uploader ${harbor_online_build_bundle}     $harbor_target_bucket
-          #uploader ${harbor_online_build_bundle}.asc $harbor_target_bucket
-          uploader harbor-offline-installer-latest.tgz     $harbor_target_bucket
-          #uploader harbor-offline-installer-latest.tgz.asc $harbor_target_bucket
-        if: always()
+          source tests/ci/build_util.sh
+          cp ${harbor_offline_build_bundle}                 harbor-offline-installer-latest.tgz
+          cp ${harbor_offline_build_bundle}.asc             harbor-offline-installer-latest.tgz.asc
+          uploader ${harbor_offline_build_bundle}           $harbor_target_bucket
+          uploader ${harbor_offline_build_bundle}.asc       $harbor_target_bucket
+          uploader ${harbor_online_build_bundle}            $harbor_target_bucket
+          uploader ${harbor_online_build_bundle}.asc        $harbor_target_bucket
+          uploader harbor-offline-installer-latest.tgz      $harbor_target_bucket
+          uploader harbor-offline-installer-latest.tgz.asc  $harbor_target_bucket
+      - uses: actions/checkout@v2
       - name: Slack Notification
         uses: drilonrecica/action-slack-notify@0.0.3
         env:
@@ -120,3 +103,4 @@ jobs:
           SLACK_TITLE: BUILD HARBOR
           SLACK_USERNAME: git action
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+
