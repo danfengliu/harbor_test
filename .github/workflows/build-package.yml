@@ -19,6 +19,14 @@ jobs:
       - ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Slack Notification
+        uses: drilonrecica/action-slack-notify@0.0.3
+        env:
+          SLACK_MESSAGE: 'package name :package:'
+          SLACK_TITLE: BUILD HARBOR
+          SLACK_USERNAME: git action
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+
       - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
         with:
           version: '285.0.0'
