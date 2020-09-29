@@ -19,6 +19,12 @@ jobs:
       - ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Slack Notification
+        uses: drilonrecica/action-slack-notify@0.0.3
+        env:
+          SLACK_MESSAGE: 'Package: '$GITHUB_RUN_NUMBER
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+
       - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
         with:
           version: '285.0.0'
@@ -46,13 +52,10 @@ jobs:
           env
           df -h
           target_branch="$(echo ${GITHUB_REF#refs/heads/})"
-          echo "1==========$GITHUB_ACTION=========="
-          echo "2==========$GITHUB_RUN_ID=========="
-          echo "3==========$GITHUB_RUN_NUMBER=========="
-          echo "4==========$target_branch=========="
           # the target release version is the version of next release(RC or GA). It needs to be updated on creating new release branch.
           target_release_version=$(cat ./VERSION)
-          Harbor_Package_Version=$target_release_version-'build.'${{ github.run_id }}
+          Harbor_Package_Version=$target_release_version-'build.'$GITHUB_RUN_NUMBER
+
           if [[ $target_branch == "master" ]]; then
             Harbor_Assets_Version=$Harbor_Package_Version
           else
@@ -63,9 +66,7 @@ jobs:
           else
             Harbor_Build_Base_Tag=dev
           fi
-          echo "==========$Harbor_Assets_Version=========="
-          echo "==========$Harbor_Build_Base_Tag=========="
-          echo "==========$Harbor_Package_Version=========="
+
           harbor_offline_build_bundle=""
           harbor_online_build_bundle=""
           harbor_logs_bucket="harbor-ci-logs"
