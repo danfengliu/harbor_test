@@ -23,7 +23,7 @@ jobs:
         uses: sonots/slack-notice-action@v3
         with:
           status: ${{ job.status }}
-          args: '{\"text\":\"${{ env.BUILD_BUNLD }}\"}'
+          args: '{\"text\":\"aaaaaaaaaaa\"}'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
