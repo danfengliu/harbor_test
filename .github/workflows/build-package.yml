@@ -19,10 +19,10 @@ jobs:
       - ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Slack Notification
+      - name: Slack Notification1
         uses: drilonrecica/action-slack-notify@0.0.3
         env:
-          SLACK_MESSAGE: 'Package: '$GITHUB_RUN_NUMBER
+          SLACK_MESSAGE: $GITHUB_RUN_NUMBER
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
 
       - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
