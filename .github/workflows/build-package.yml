@@ -22,8 +22,10 @@ jobs:
       - name: Slack Notification1
         uses: drilonrecica/action-slack-notify@0.0.3
         env:
-          SLACK_MESSAGE: ({{ GITHUB_ACTION }} {{ GITHUB_RUN_NUMBER }})
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_AVATAR: repository
+        with:
+          args: 'A new commit has been pushed.'$GITHUB_ACTION({{ GITHUB_ACTION }} {{ GITHUB_RUN_NUMBER }})
 
       - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
         with:
