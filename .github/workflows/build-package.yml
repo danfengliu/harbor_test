@@ -46,6 +46,7 @@ jobs:
           env
           df -h
           target_branch="$(echo ${GITHUB_REF#refs/heads/})"
+          echo "==========$GITHUB_ACTION=========="
           echo "==========$target_branch=========="
           # the target release version is the version of next release(RC or GA). It needs to be updated on creating new release branch.
           target_release_version=$(cat ./VERSION)
