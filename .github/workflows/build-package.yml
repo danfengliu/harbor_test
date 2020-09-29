@@ -19,16 +19,6 @@ jobs:
       - ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Slack Notification
-        uses: sonots/slack-notice-action@v3
-        with:
-          status: ${{ job.status }}
-          title: "11111aaaaaaaaaaa"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_TITLE: 'Package: ${{ env.BUILD_BUNLD }}'
-        if: always()
       - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
         with:
           version: '285.0.0'
@@ -106,15 +96,14 @@ jobs:
           uploader ${harbor_online_build_bundle}.asc        $harbor_target_bucket
           uploader harbor-offline-installer-latest.tgz      $harbor_target_bucket
           uploader harbor-offline-installer-latest.tgz.asc  $harbor_target_bucket
-          echo "::set-env name=BUILD_BUNLD::$harbor_offline_build_bundle"
+          echo "::set-env name=BUILD_BUNDLE::$harbor_offline_build_bundle"
       - name: Slack Notification
         uses: sonots/slack-notice-action@v3
         with:
           status: ${{ job.status }}
-          args: '{\"text\":\"${{ env.BUILD_BUNLD }}\"}'
+          title: ${{ github.run_number }} - ${{ env.BUILD_BUNDLE }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_TITLE: 'Package: ${{ env.BUILD_BUNLD }}'
         if: always()
 
