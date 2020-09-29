@@ -24,7 +24,7 @@ jobs:
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_AVATAR: repository
-          SLACK_MESSAGE: 'Please review on https://github.com/YOUR_PATH/YOUR_REPO_NAME/pull/${{ env.pull_number}}'
+          SLACK_MESSAGE: 'Please review on https://github.com/YOUR_PATH/YOUR_REPO_NAME/pull/${{ env.GITHUB_RUN_NUMBER }}/${{ env.GITHUB_WORKFLOW }}'
 
       - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
         with:
@@ -102,9 +102,5 @@ jobs:
           uploader harbor-offline-installer-latest.tgz      $harbor_target_bucket
           uploader harbor-offline-installer-latest.tgz.asc  $harbor_target_bucket
           #echo "::set-env name=GOPATH::$(go env GOPATH):$GITHUB_WORKSPACE"
-      - name: Slack Notification
-        uses: drilonrecica/action-slack-notify@0.0.3
-        env:
-          SLACK_MESSAGE: 'Package: ${harbor_offline_build_bundle}'
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+
 
