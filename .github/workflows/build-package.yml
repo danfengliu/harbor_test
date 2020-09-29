@@ -46,8 +46,10 @@ jobs:
           env
           df -h
           target_branch="$(echo ${GITHUB_REF#refs/heads/})"
-          echo "==========$GITHUB_ACTION=========="
-          echo "==========$target_branch=========="
+          echo "1==========$GITHUB_ACTION=========="
+          echo "2==========$GITHUB_RUN_ID=========="
+          echo "3==========$GITHUB_RUN_NUMBER=========="
+          echo "4==========$target_branch=========="
           # the target release version is the version of next release(RC or GA). It needs to be updated on creating new release branch.
           target_release_version=$(cat ./VERSION)
           Harbor_Package_Version=$target_release_version-'build.'${{ github.run_id }}
