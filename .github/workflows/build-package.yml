@@ -1,4 +1,4 @@
-name: "Build Package"
+name: "Build Package Workflow"
 env:
   DOCKER_COMPOSE_VERSION: 1.23.0
 
@@ -19,6 +19,16 @@ jobs:
       - ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Slack Notification
+        uses: sonots/slack-notice-action@v3
+        with:
+          status: ${{ job.status }}
+          args: '{\"text\":\"${{ env.BUILD_BUNLD }}\"}'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_TITLE: 'Package: ${{ env.BUILD_BUNLD }}'
+        if: always()
       - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
         with:
           version: '285.0.0'
@@ -101,6 +111,7 @@ jobs:
         uses: sonots/slack-notice-action@v3
         with:
           status: ${{ job.status }}
+          args: '{\"text\":\"${{ env.BUILD_BUNLD }}\"}'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
