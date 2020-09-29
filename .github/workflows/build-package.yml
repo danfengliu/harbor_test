@@ -19,16 +19,6 @@ jobs:
       - ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: setup env
-        run: |
-          env
-      - name: Slack Notification1
-        uses: rtCamp/action-slack-notify@v2.0.0
-        env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_AVATAR: repository
-          SLACK_MESSAGE: 'Please review on https://github.com/YOUR_PATH/YOUR_REPO_NAME/pull/${{ github.event_name }}/${{ github.run_number }}/${{ github.event }}/'
-
       - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
         with:
           version: '285.0.0'
@@ -104,6 +94,12 @@ jobs:
           uploader ${harbor_online_build_bundle}.asc        $harbor_target_bucket
           uploader harbor-offline-installer-latest.tgz      $harbor_target_bucket
           uploader harbor-offline-installer-latest.tgz.asc  $harbor_target_bucket
-          #echo "::set-env name=GOPATH::$(go env GOPATH):$GITHUB_WORKSPACE"
+          echo "::set-env name=BUILD_BUNLD::$harbor_offline_build_bundle"
+          env
+      - name: Slack Notification1
+        uses: rtCamp/action-slack-notify@v2.0.0
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_MESSAGE: 'Build: ${{ env.BUILD_BUNLD }}'
 
 
