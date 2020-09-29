@@ -101,7 +101,7 @@ jobs:
         uses: sonots/slack-notice-action@v3
         with:
           status: ${{ job.status }}
-          title: ${{ github.run_number }} - ${{ env.BUILD_BUNDLE }}
+          title: Build Package - ${{ env.BUILD_BUNDLE }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
