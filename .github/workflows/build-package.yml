@@ -22,7 +22,7 @@ jobs:
       - name: Slack Notification1
         uses: drilonrecica/action-slack-notify@0.0.3
         env:
-          SLACK_MESSAGE: $GITHUB_RUN_NUMBER
+          SLACK_MESSAGE: {{ GITHUB_ACTION }} {{ GITHUB_RUN_NUMBER }}
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
 
       - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
