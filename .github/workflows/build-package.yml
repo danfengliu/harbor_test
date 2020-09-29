@@ -24,6 +24,7 @@ jobs:
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_AVATAR: repository
+          SLACK_MESSAGE: '${env.GITHUB_WORKFLOW} (${env.GITHUB_RUN_NUMBER}) has finished'
 
       - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
         with:
