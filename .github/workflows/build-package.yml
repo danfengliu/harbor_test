@@ -45,7 +45,14 @@ jobs:
           set -x
           env
           df -h
+          harbor_target_bucket=""
           target_branch="$(echo ${GITHUB_REF#refs/heads/})"
+          harbor_offline_build_bundle=""
+          harbor_online_build_bundle=""
+          harbor_logs_bucket="harbor-ci-logs"
+          harbor_builds_bucket="harbor-builds"
+          harbor_releases_bucket="harbor-releases"
+          harbor_ci_pipeline_store_bucket="harbor-ci-pipeline-store/latest"
           # the target release version is the version of next release(RC or GA). It needs to be updated on creating new release branch.
           target_release_version=$(cat ./VERSION)
           Harbor_Package_Version=$target_release_version-'build.'$GITHUB_RUN_NUMBER
@@ -55,24 +62,19 @@ jobs:
           else
             Harbor_Assets_Version=$target_release_version
           fi
+
           if [[ $target_branch == "release-"* ]]; then
             Harbor_Build_Base_Tag=$target_release_version
           else
             Harbor_Build_Base_Tag=dev
           fi
 
-          harbor_offline_build_bundle=""
-          harbor_online_build_bundle=""
-          harbor_logs_bucket="harbor-ci-logs"
-          harbor_builds_bucket="harbor-builds"
-          harbor_releases_bucket="harbor-releases"
-          harbor_ci_pipeline_store_bucket="harbor-ci-pipeline-store/latest"
-          harbor_target_bucket=""
           if [[ $target_branch == "master" ]]; then
             harbor_target_bucket=$harbor_builds_bucket
           else
             harbor_target_bucket=$harbor_releases_bucket/$target_branch
           fi
+
           cd src/github.com/goharbor/harbor
           sudo make package_offline GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} PKGVERSIONTAG=${Harbor_Package_Version} NOTARYFLAG=true CLAIRFLAG=true CHARTFLAG=true TRIVYFLAG=true HTTPPROXY=
           sudo make package_online GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} PKGVERSIONTAG=${Harbor_Package_Version} NOTARYFLAG=true CLAIRFLAG=true CHARTFLAG=true TRIVYFLAG=true HTTPPROXY=
@@ -95,11 +97,22 @@ jobs:
           uploader harbor-offline-installer-latest.tgz      $harbor_target_bucket
           uploader harbor-offline-installer-latest.tgz.asc  $harbor_target_bucket
           echo "::set-env name=BUILD_BUNLD::$harbor_offline_build_bundle"
-          env
-      - name: Slack Notification1
-        uses: rtCamp/action-slack-notify@v2.0.0
+      - name: Slack Notification
+      - uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          fields: workflow,job,commit,repo,ref,author,took
+          custom_payload: |
+            {
+              username: 'action-slack',
+              icon_emoji: ':octocat:',
+              attachments: [{
+                color: '${{ job.status }}' === 'success' ? 'good' : '${{ job.status }}' === 'failure' ? 'danger' : 'warning',
+                text: `${process.env.AS_WORKFLOW}\n${process.env.AS_JOB} (${process.env.AS_COMMIT}) of ${process.env.AS_REPO}@${process.env.AS_REF} by ${process.env.AS_AUTHOR} succeeded in ${process.env.AS_TOOK}`,
+              }]
+            }
         env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_MESSAGE: 'Build: ${{ env.BUILD_BUNLD }}'
-
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_TITLE: 'Package: ${{ env.BUILD_BUNLD }}'
+        if: always()
 
