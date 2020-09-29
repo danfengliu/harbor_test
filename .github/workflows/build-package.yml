@@ -21,13 +21,13 @@ jobs:
       - uses: actions/checkout@v2
       - name: setup env
         run: |
-          echo "::set-env name=RUN_NUMBER::$GITHUB_RUN_NUMBER"
+          env
       - name: Slack Notification1
         uses: rtCamp/action-slack-notify@v2.0.0
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_AVATAR: repository
-          SLACK_MESSAGE: 'Please review on https://github.com/YOUR_PATH/YOUR_REPO_NAME/pull/${{ env.RUN_NUMBER }}/${{ github.event_name }}'
+          SLACK_MESSAGE: 'Please review on https://github.com/YOUR_PATH/YOUR_REPO_NAME/pull/${{ github.event_name }}/${{ github.run_number }}/${{ github.event }}/'
 
       - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
         with:
