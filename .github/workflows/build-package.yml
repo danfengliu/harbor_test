@@ -19,7 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2.1.0
       - uses: jitterbit/get-changed-files@v1
-        id: abc
+        id: changed-files
         with:
           format: space-delimited
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -60,13 +60,13 @@ jobs:
         with:
           path: src/github.com/goharbor/harbor
       - name: Build Dev Base Image
-        if: contains(steps.abc.outputs.modified, 'VERSION')
+        if: contains(steps.changed-files.outputs.modified, 'make/photon/*/Dockerfile.base')
         run:
             base_image_tag=dev
             echo "Build Dev Base Image"
             #sudo make build_base_docker -e NPM_REGISTRY=http://build-artifactory.eng.vmware.com/artifactory/api/npm/npm -e BASEIMAGETAG=$base_image_tag -e REGISTRYUSER="${{ secrets.DOCKER_HUB_USERNAME }}" -e REGISTRYPASSWORD="${{ secrets.DOCKER_HUB_PASSWORD }}" -e PUSHBASEIMAGE=yes
       - name: Build Release Base Image
-        if: contains(steps.abc.outputs.modified, 'VERSION')
+        if: contains(steps.changed-files.outputs.modified, 'VERSION')
         run:
             base_image_tag=$(cat ./VERSION)
             echo "Build Release Base Image"
