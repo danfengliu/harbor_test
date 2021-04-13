@@ -60,7 +60,7 @@ jobs:
         with:
           path: src/github.com/goharbor/harbor
       - name: Build Dev Base Image
-        if: contains(steps.changed-files.outputs.modified, 'make/photon/core/Dockerfile.base')
+        if: contains(steps.changed-files.outputs.modified, 'Dockerfile.base')
         run:
             base_image_tag=dev
             echo "Build Dev Base Image"
